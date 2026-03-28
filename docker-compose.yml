@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  laviewnvr:
+    build: .
+    container_name: laviewnvr
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - nvr_recordings:/app/recordings
+      - nvr_motion:/app/motion_events
+      - nvr_logs:/app/logs
+      - nvr_db:/app/data
+    environment:
+      - NVR_WEB_PASSWORD=${NVR_WEB_PASSWORD:-changeme}
+    restart: unless-stopped
+    network_mode: host   # needed for camera discovery on LAN
+
+volumes:
+  nvr_recordings:
+  nvr_motion:
+  nvr_logs:
+  nvr_db:
