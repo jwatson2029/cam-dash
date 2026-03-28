@@ -134,6 +134,8 @@ class NetworkScanner:
 
         def _ping(ip: str) -> None:
             try:
+                # Note: flags are Linux/macOS compatible (-c count, -W timeout).
+                # On Windows use: ping -n 1 -w 1000
                 result = subprocess.run(
                     ["ping", "-c", "1", "-W", "1", str(ip)],
                     stdout=subprocess.DEVNULL,

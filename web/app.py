@@ -122,7 +122,24 @@ def create_app(settings: Settings, db: Database,
 
     @app.get("/motion", response_class=HTMLResponse)
     async def motion_page(request: Request, _=Depends(verify_credentials)):
-        events = _db.get_motion_events(limit=100)
+        raw_events = _db.get_motion_events(limit=100)
+        motion_base = Path(settings.global_.motion_path)
+        events = []
+        for ev in raw_events:
+            snap = ev.get("snapshot") or ""
+            # Convert absolute/relative fs path to a URL-safe relative path
+            # e.g. "motion_events/front_door/front_door_2024-01-01_12-00-00.jpg"
+            #   → "/static/motion/front_door/front_door_2024-01-01_12-00-00.jpg"
+            snap_url = ""
+            if snap:
+                snap_path = Path(snap)
+                try:
+                    rel = snap_path.relative_to(motion_base)
+                    snap_url = f"/static/motion/{rel}"
+                except ValueError:
+                    # Path is not under motion_base; use filename only
+                    snap_url = f"/static/motion/{ev['camera_id']}/{snap_path.name}"
+            events.append({**ev, "snapshot_url": snap_url})
         return templates.TemplateResponse("motion_events.html", {
             "request": request,
             "events": events,

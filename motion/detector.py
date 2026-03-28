@@ -35,7 +35,7 @@ class MotionDetector(ABC):
     @abstractmethod
     def detect(self, frame: np.ndarray) -> tuple[bool, float, list]:
         """
-        Analyse a frame for motion.
+        Analyze a frame for motion.
 
         Returns:
             (motion_detected, confidence, bounding_boxes)

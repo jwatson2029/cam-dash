@@ -9,8 +9,8 @@
   <div class="col">
     <div class="card h-100">
       <div class="card-body p-1">
-        {% if event.snapshot %}
-        <img src="/static/motion/{{ event.camera_id }}/{{ event.snapshot | replace('motion_events/' + event.camera_id + '/', '') }}"
+        {% if event.snapshot_url %}
+        <img src="{{ event.snapshot_url }}"
              class="img-fluid rounded" alt="Motion snapshot"
              onerror="this.style.display='none'">
         {% else %}
