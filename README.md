@@ -12,12 +12,62 @@ A **complete, production-ready, fully local** Network Video Recorder (NVR) syste
 - 📦 **SQLite** camera state storage
 - 🐳 **Docker** support
 
-## Quick Start (Local)
+## Quick Start (macOS)
+
+### 1 — Install Homebrew (if you don't have it)
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+### 2 — Install system dependencies
+
+```bash
+brew install python@3.12 ffmpeg
+```
+
+### 3 — Clone the repo and create a virtual environment
+
+```bash
+git clone https://github.com/jwatson2029/cam-dash.git
+cd cam-dash
+
+python3.12 -m venv .venv
+source .venv/bin/activate
+```
+
+### 4 — Install Python dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 5 — Configure
+
+```bash
+cp config.example.yaml config.yaml
+# Open config.yaml in your editor and fill in your camera details
+```
+
+### 6 — Run
+
+```bash
+python main.py
+```
+
+Dashboard: http://localhost:8000  
+Default credentials: `admin` / `changeme`
+
+> **Tip:** Keep the virtual environment active (`source .venv/bin/activate`) every time you open a new terminal to run the app.
+
+---
+
+## Quick Start (Local — Linux)
 
 ### Prerequisites
 
 - Python 3.12+
-- FFmpeg installed (`sudo apt install ffmpeg` or `brew install ffmpeg`)
+- FFmpeg installed (`sudo apt install ffmpeg`)
 - OpenCV dependencies
 
 ```bash
@@ -37,9 +87,26 @@ Default credentials: `admin` / `changeme`
 
 ## Quick Start (Docker)
 
+### Linux
+
 ```bash
 docker compose up -d
 ```
+
+### macOS
+
+`network_mode: host` is not supported by Docker Desktop for Mac. Use the
+provided macOS override file instead:
+
+```bash
+cp config.example.yaml config.yaml
+# Edit config.yaml with your camera IPs and credentials
+docker compose -f docker-compose.yml -f docker-compose.mac.yml up -d
+```
+
+> **Note:** Auto-discovery (`--discover`) does not work through Docker on
+> macOS because Docker runs inside a Linux VM. Add cameras manually in
+> `config.yaml`.
 
 Dashboard: http://localhost:8000
 
