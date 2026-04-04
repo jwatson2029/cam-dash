@@ -29,6 +29,19 @@ export default function VideoInput({ inputRef }: VideoInputProps) {
       return;
     }
 
+    // Strict URL hostname validation to prevent SSRF-style bypasses
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(trimmed);
+    } catch {
+      toast.error("Please enter a valid URL");
+      return;
+    }
+    if (!parsedUrl.hostname.endsWith("tiktok.com") && parsedUrl.hostname !== "tiktok.com") {
+      toast.error("Please enter a valid TikTok URL");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/scrape", {
