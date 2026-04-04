@@ -100,7 +100,7 @@ export default function VideoInput({ inputRef }: VideoInputProps) {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && analyze(url)}
-              placeholder="https://www.tiktok.com/@username/video/..."
+              placeholder="https://www.tiktok.com/@fcs.schools/video/7624733171023695118"
               className="flex-1 bg-transparent text-slate-200 placeholder:text-slate-600 text-sm outline-none min-w-0"
               disabled={isLoading}
               aria-label="TikTok video URL"

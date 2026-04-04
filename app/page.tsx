@@ -67,7 +67,7 @@ export default function Home() {
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-5">
                 <span className="text-slate-50">Get Real-Time</span>
                 <br />
-                <span className="gradient-text">TikTok Views &amp; Stats</span>
+                <span className="gradient-text">TikTok Views & Stats</span>
                 <br />
                 <span className="text-slate-50">in Seconds</span>
               </h1>
