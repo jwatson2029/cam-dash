@@ -78,6 +78,7 @@ export async function clientScrapeVideo(url: string): Promise<VideoData> {
         createTime:
           Math.floor(Date.now() / 1000) -
           86400 * Math.floor(seededRng(videoId)() * 30),
+        dataSource: "oembed" as const,
         video: {
           thumbnailUrl: (oembed.thumbnail_url as string) || "",
           playUrl: "",
@@ -114,6 +115,7 @@ export async function clientScrapeVideo(url: string): Promise<VideoData> {
     id: videoId,
     desc: `TikTok video by @${username} #fyp #viral #trending`,
     createTime: Math.floor(Date.now() / 1000) - 86400 * Math.floor(rng() * 30),
+    dataSource: "generated" as const,
     video: {
       thumbnailUrl: "",
       playUrl: "",

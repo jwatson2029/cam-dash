@@ -29,14 +29,23 @@ export default function Home() {
       <div className="flex-1 flex flex-col">
         {/* Hero Section */}
         <section className="relative overflow-hidden">
-          {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-purple-950/20 to-slate-950" />
+          {/* Background layers */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-purple-950/15 to-slate-950" />
+          {/* Dot grid */}
+          <div
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, rgb(100 60 180 / 0.4) 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
+            }}
+          />
           <div className="absolute inset-0">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-purple-500/10 rounded-full blur-3xl" />
-            <div className="absolute top-20 left-1/3 w-[400px] h-[300px] bg-pink-500/5 rounded-full blur-3xl" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-purple-500/8 rounded-full blur-3xl" />
+            <div className="absolute top-20 right-1/4 w-[350px] h-[350px] bg-pink-500/6 rounded-full blur-3xl" />
           </div>
 
-          <div className="relative z-10 container mx-auto px-4 pt-24 pb-16 max-w-4xl">
+          <div className="relative z-10 container mx-auto px-4 pt-20 pb-16 max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -48,14 +57,14 @@ export default function Home() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-6"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8"
               >
-                <Zap className="w-3 h-3" />
-                <span>Real-time analytics • No login required</span>
+                <Zap className="w-3.5 h-3.5" />
+                <span>Real-time analytics · No login required</span>
               </motion.div>
 
               {/* Headline */}
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-5">
                 <span className="text-slate-50">Get Real-Time</span>
                 <br />
                 <span className="gradient-text">TikTok Views & Stats</span>
@@ -64,8 +73,8 @@ export default function Home() {
               </h1>
 
               {/* Subheadline */}
-              <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10">
-                Paste any public TikTok video URL → instant analytics.{" "}
+              <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                Paste any public TikTok video URL and get instant analytics.{" "}
                 <span className="text-slate-300">No login. No API keys.</span>
               </p>
 
@@ -77,7 +86,7 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="flex items-center justify-center gap-6 mt-6 text-sm text-slate-500"
+                className="flex items-center justify-center gap-6 mt-8 text-sm text-slate-500"
               >
                 <div className="flex items-center gap-1.5">
                   <Shield className="w-3.5 h-3.5 text-green-500" />

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Copy, Share2, Download, RefreshCw, Play, Music2, Eye } from "lucide-react";
+import { Copy, Share2, Download, RefreshCw, Play, Music2, Eye, Wifi, WifiOff, Info } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { useAnalysisStore } from "@/lib/store";
@@ -31,6 +31,29 @@ function SkeletonCard() {
   );
 }
 
+type DataSource = "live" | "oembed" | "generated";
+
+const DATA_SOURCE_CONFIG: Record<DataSource, { label: string; description: string; className: string; icon: React.ReactNode }> = {
+  live: {
+    label: "Live Data",
+    description: "Stats fetched directly from TikTok",
+    className: "text-green-400 bg-green-500/10 border-green-500/30",
+    icon: <Wifi className="w-3 h-3" />,
+  },
+  oembed: {
+    label: "Partial Data",
+    description: "Real title & thumbnail · stats are estimated",
+    className: "text-yellow-400 bg-yellow-500/10 border-yellow-500/30",
+    icon: <Info className="w-3 h-3" />,
+  },
+  generated: {
+    label: "Estimated",
+    description: "Could not reach TikTok — all data is generated",
+    className: "text-slate-400 bg-slate-500/10 border-slate-600/50",
+    icon: <WifiOff className="w-3 h-3" />,
+  },
+};
+
 export default function ResultsCard() {
   const { currentResult, currentUrl, isLoading, reset } = useAnalysisStore();
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,7 +61,8 @@ export default function ResultsCard() {
   if (isLoading) return <SkeletonCard />;
   if (!currentResult) return null;
 
-  const { id, desc, createTime, video, author, stats, music, hashtags } = currentResult;
+  const { id, desc, createTime, video, author, stats, music, hashtags, dataSource } = currentResult;
+  const sourceConfig = DATA_SOURCE_CONFIG[dataSource ?? "generated"];
 
   const copyJSON = () => {
     navigator.clipboard.writeText(JSON.stringify(currentResult, null, 2));
@@ -92,17 +116,27 @@ export default function ResultsCard() {
         className="rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50">
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span>Analysis complete</span>
+        <div className="flex items-center justify-between px-6 py-3 border-b border-slate-800/50 bg-slate-900/30">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-sm text-slate-400">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span>Analysis complete</span>
+            </div>
+            {/* Data source badge */}
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium ${sourceConfig.className}`}
+              title={sourceConfig.description}
+            >
+              {sourceConfig.icon}
+              {sourceConfig.label}
+            </div>
           </div>
           <button
             onClick={reset}
             className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            Analyze Another
+            New Search
           </button>
         </div>
 
@@ -114,7 +148,7 @@ export default function ResultsCard() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setModalOpen(true)}
-                className="relative w-full sm:w-36 h-48 sm:h-48 rounded-xl overflow-hidden bg-slate-800 group cursor-pointer"
+                className="relative w-full sm:w-36 h-52 sm:h-52 rounded-xl overflow-hidden bg-slate-800 group cursor-pointer shadow-lg"
                 aria-label="Play video"
               >
                 {video.thumbnailUrl ? (
@@ -128,8 +162,8 @@ export default function ResultsCard() {
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-purple-800 to-pink-800" />
                 )}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/20">
                     <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
                   </div>
                 </div>
@@ -139,8 +173,8 @@ export default function ResultsCard() {
             {/* Main content */}
             <div className="flex-1 min-w-0">
               {/* Author */}
-              <div className="flex items-center gap-3 mb-3">
-                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-700 flex-shrink-0">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-slate-700 flex-shrink-0 ring-2 ring-slate-700">
                   {author.avatarUrl ? (
                     <Image
                       src={author.avatarUrl}
@@ -156,27 +190,27 @@ export default function ResultsCard() {
                   )}
                 </div>
                 <div>
-                  <p className="font-semibold text-slate-100">{author.nickname}</p>
+                  <p className="font-semibold text-slate-100 leading-tight">{author.nickname}</p>
                   <p className="text-sm text-slate-500">@{author.uniqueId}</p>
                 </div>
-                <div className="ml-auto text-xs text-slate-600">
+                <div className="ml-auto text-xs text-slate-600 shrink-0">
                   Posted {timeAgo(createTime)}
                 </div>
               </div>
 
               {/* View count hero */}
-              <div className="flex items-center gap-3 mb-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
+              <div className="flex items-center gap-4 mb-4 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20">
                 <Eye className="w-5 h-5 text-purple-400 flex-shrink-0" />
                 <div>
                   <p className="text-xs text-slate-500 uppercase tracking-wider mb-0.5">Total Views</p>
-                  <p className="text-3xl font-bold gradient-text">
+                  <p className="text-3xl font-bold gradient-text leading-none">
                     <AnimatedCounter value={stats.playCount} />
                   </p>
                 </div>
               </div>
 
               {/* Description */}
-              <p className="text-sm text-slate-400 line-clamp-2 mb-3">{desc}</p>
+              <p className="text-sm text-slate-400 line-clamp-2 mb-3 leading-relaxed">{desc}</p>
 
               {/* Hashtags */}
               {hashtags.length > 0 && (
@@ -187,7 +221,7 @@ export default function ResultsCard() {
                       href={`https://www.tiktok.com/tag/${tag}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 hover:bg-purple-500/20 transition-colors"
+                      className="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 hover:bg-purple-500/20 transition-colors"
                     >
                       #{tag}
                     </a>
@@ -196,18 +230,18 @@ export default function ResultsCard() {
               )}
 
               {/* Music */}
-              <div className="flex items-center gap-2 text-xs text-slate-500 mb-4">
-                <Music2 className="w-3.5 h-3.5 text-pink-400" />
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Music2 className="w-3.5 h-3.5 text-pink-400 flex-shrink-0" />
                 <span className="truncate">{music.title}</span>
                 {music.authorName && (
-                  <span className="text-slate-600">• {music.authorName}</span>
+                  <span className="text-slate-600 flex-shrink-0">• {music.authorName}</span>
                 )}
               </div>
             </div>
           </div>
 
           {/* Stats grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
             <StatCard icon="❤️" label="Likes" value={stats.diggCount} delay={0.1} />
             <StatCard icon="💬" label="Comments" value={stats.commentCount} delay={0.2} />
             <StatCard icon="🔗" label="Shares" value={stats.shareCount} delay={0.3} />
@@ -215,7 +249,7 @@ export default function ResultsCard() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-800/50">
+          <div className="flex flex-wrap gap-2 mt-5 pt-4 border-t border-slate-800/50">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

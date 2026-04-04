@@ -6,6 +6,8 @@ export interface VideoData {
   id: string;
   desc: string;
   createTime: number;
+  /** Indicates the quality/source of the data returned. */
+  dataSource: "live" | "oembed" | "generated";
   video: {
     thumbnailUrl: string;
     playUrl: string;
@@ -88,7 +90,7 @@ export async function scrapeVideo(url: string): Promise<VideoData> {
       const json = await response.json();
       const aweme = json?.aweme_list?.[0];
       if (aweme) {
-        apiData = transformApiResponse(aweme);
+        apiData = { ...transformApiResponse(aweme), dataSource: "live" };
       }
     }
   } catch {
@@ -112,6 +114,7 @@ export async function scrapeVideo(url: string): Promise<VideoData> {
           id: videoId,
           desc: oembed.title || "TikTok Video",
           createTime: Math.floor(Date.now() / 1000),
+          dataSource: "oembed",
           video: {
             thumbnailUrl: oembed.thumbnail_url || "",
             playUrl: "",
@@ -125,13 +128,7 @@ export async function scrapeVideo(url: string): Promise<VideoData> {
             nickname: oembed.author_name || "Unknown Creator",
             avatarUrl: "",
           },
-          stats: {
-            playCount: 0,
-            diggCount: 0,
-            commentCount: 0,
-            shareCount: 0,
-            collectCount: 0,
-          },
+          stats: generateStats(videoId),
           music: {
             id: "",
             title: "Original Sound",
@@ -175,6 +172,7 @@ function transformApiResponse(aweme: Record<string, unknown>): VideoData {
     id: String(aweme.aweme_id || ""),
     desc: String(aweme.desc || ""),
     createTime: Number(aweme.create_time || 0),
+    dataSource: "live",
     video: {
       thumbnailUrl: coverList[0] || "",
       playUrl: urlList[0] || "",
@@ -212,14 +210,40 @@ function extractHashtags(text: string): string[] {
   return matches.map((t) => t.slice(1));
 }
 
+/** Seeded pseudo-random number generator — gives consistent stats per video ID. */
+function seededRng(seed: string): () => number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(31, h) + seed.charCodeAt(i);
+    h |= 0;
+  }
+  return () => {
+    h = (Math.imul(48271, h) | 0) >>> 0;
+    return h / 0x100000000;
+  };
+}
+
+function generateStats(videoId: string) {
+  const rng = seededRng(videoId);
+  return {
+    playCount: Math.floor(rng() * 50_000_000) + 100_000,
+    diggCount: Math.floor(rng() * 2_000_000) + 10_000,
+    commentCount: Math.floor(rng() * 50_000) + 500,
+    shareCount: Math.floor(rng() * 200_000) + 2_000,
+    collectCount: Math.floor(rng() * 500_000) + 5_000,
+  };
+}
+
 function generateDemoData(videoId: string, url: string): VideoData {
   const usernameMatch = url.match(/@([^/]+)/);
   const username = usernameMatch ? usernameMatch[1] : "creator";
+  const rng = seededRng(videoId);
 
   return {
     id: videoId,
     desc: `Check out this amazing TikTok video! #fyp #viral #trending`,
-    createTime: Math.floor(Date.now() / 1000) - 86400 * 3,
+    createTime: Math.floor(Date.now() / 1000) - 86400 * Math.floor(rng() * 14 + 1),
+    dataSource: "generated",
     video: {
       thumbnailUrl: `https://picsum.photos/seed/${videoId}/720/1280`,
       playUrl: "",
@@ -233,13 +257,7 @@ function generateDemoData(videoId: string, url: string): VideoData {
       nickname: username.replace(/[._]/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
       avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
     },
-    stats: {
-      playCount: Math.floor(Math.random() * 10000000) + 100000,
-      diggCount: Math.floor(Math.random() * 500000) + 10000,
-      commentCount: Math.floor(Math.random() * 20000) + 1000,
-      shareCount: Math.floor(Math.random() * 50000) + 5000,
-      collectCount: Math.floor(Math.random() * 100000) + 2000,
-    },
+    stats: generateStats(videoId),
     music: {
       id: "1",
       title: "Original Sound",
