@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Search, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useAnalysisStore } from "@/lib/store";
+import { clientScrapeVideo } from "@/lib/client-scraper";
 
 const EXAMPLE_URL = "https://www.tiktok.com/@fcs.schools/video/7624733171023695118";
 
@@ -44,18 +45,7 @@ export default function VideoInput({ inputRef }: VideoInputProps) {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/scrape", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: trimmed }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to fetch video data");
-      }
-
+      const data = await clientScrapeVideo(trimmed);
       setCurrentResult(data, trimmed);
       addToHistory(trimmed, data);
       toast.success("Analysis complete!", {
