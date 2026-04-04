@@ -5,9 +5,11 @@ import type { NextConfig } from "next";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 const nextConfig: NextConfig = {
-  output: "export",
-  trailingSlash: true,
-  ...(basePath ? { basePath, assetPrefix: basePath } : {}),
+  // Only do a static export when building for GitHub Pages (basePath set).
+  // On Vercel / localhost we keep server-side rendering so API routes work.
+  ...(basePath
+    ? { output: "export" as const, trailingSlash: true, basePath, assetPrefix: basePath }
+    : {}),
   images: {
     // next/image optimisation is not available in static exports
     unoptimized: true,

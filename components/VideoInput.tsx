@@ -6,11 +6,26 @@ import { Search, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useAnalysisStore } from "@/lib/store";
 import { clientScrapeVideo } from "@/lib/client-scraper";
+import type { VideoData } from "@/lib/scraper";
 
 const EXAMPLE_URL = "https://www.tiktok.com/@fcs.schools/video/7624733171023695118";
 
 interface VideoInputProps {
   inputRef?: RefObject<HTMLInputElement | null>;
+}
+
+async function fetchFromServer(url: string): Promise<VideoData> {
+  const res = await fetch("/api/scrape", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error((body as { error?: string }).error || "Server fetch failed");
+  }
+  return res.json();
 }
 
 export default function VideoInput({ inputRef }: VideoInputProps) {
@@ -45,7 +60,16 @@ export default function VideoInput({ inputRef }: VideoInputProps) {
 
     setLoading(true);
     try {
-      const data = await clientScrapeVideo(trimmed);
+      let data: VideoData;
+
+      // Try the server-side API route first (richer data, avoids CORS).
+      // Falls back to client scraper if the route is unavailable (static export).
+      try {
+        data = await fetchFromServer(trimmed);
+      } catch {
+        data = await clientScrapeVideo(trimmed);
+      }
+
       setCurrentResult(data, trimmed);
       addToHistory(trimmed, data);
       toast.success("Analysis complete!", {
@@ -76,7 +100,7 @@ export default function VideoInput({ inputRef }: VideoInputProps) {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && analyze(url)}
-              placeholder="https://www.tiktok.com/@fcs.schools/video/7624733171023695118"
+              placeholder="https://www.tiktok.com/@username/video/..."
               className="flex-1 bg-transparent text-slate-200 placeholder:text-slate-600 text-sm outline-none min-w-0"
               disabled={isLoading}
               aria-label="TikTok video URL"
@@ -94,7 +118,7 @@ export default function VideoInput({ inputRef }: VideoInputProps) {
             ) : (
               <Sparkles className="w-4 h-4" />
             )}
-            <span>{isLoading ? "Analyzing..." : "Analyze Video"}</span>
+            <span>{isLoading ? "Analyzing..." : "Analyze"}</span>
           </motion.button>
         </div>
       </motion.div>
